@@ -1,0 +1,16 @@
+{
+  "lastSequence": 1,
+  "specs": [
+    {
+      "id": "spec-001",
+      "title": "Product Requirements Document",
+      "filename": "spec-001-product-requirements-document.md",
+      "source": "clipboard",
+      "importedAt": "2026-01-01T00:00:00.000Z",
+      "extractedItems": {
+        "epics": 7,
+        "stories": 9
+      }
+    }
+  ]
+}
