@@ -23,13 +23,30 @@ enum LoadingState<T> {
     case error(Error)
 }
 
-/// View displaying the list of projects
+/// View displaying the list of projects with search functionality
 struct ProjectListView: View {
     @ObservedObject var settings: AppSettings
     @State private var loadingState: LoadingState<[Project]> = .idle
     @State private var refreshTask: Task<Void, Never>?
+    @State private var searchText: String = ""
 
     private let apiClient = APIClient()
+
+    /// Filters projects based on the current search text
+    private var filteredProjects: [Project] {
+        guard case .loaded(let projects) = loadingState else {
+            return []
+        }
+
+        let trimmedQuery = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedQuery.isEmpty else {
+            return projects
+        }
+
+        return projects.filter { project in
+            project.matchesSearch(query: trimmedQuery)
+        }
+    }
 
     var body: some View {
         Group {
@@ -42,15 +59,17 @@ struct ProjectListView: View {
                 ProgressView("Loading projects...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            case .loaded(let projects):
-                if projects.isEmpty {
+            case .loaded:
+                if filteredProjects.isEmpty && !searchText.isEmpty {
+                    ContentUnavailableView.search(text: searchText)
+                } else if filteredProjects.isEmpty {
                     ContentUnavailableView(
                         "No Projects",
                         systemImage: "folder",
                         description: Text("No projects found in your index.")
                     )
                 } else {
-                    List(projects) { project in
+                    List(filteredProjects) { project in
                         ProjectRow(project: project)
                     }
                     .refreshable {
@@ -71,6 +90,7 @@ struct ProjectListView: View {
             }
         }
         .navigationTitle("Projects")
+        .searchable(text: $searchText, prompt: "Search projects")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 NavigationLink(destination: SettingsView(settings: settings)) {

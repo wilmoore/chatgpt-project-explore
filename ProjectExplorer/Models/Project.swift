@@ -77,6 +77,26 @@ struct Project: Codable, Identifiable, Equatable {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
+
+    /// Checks if the project matches a search query
+    /// - Parameter query: The search query to match against
+    /// - Returns: True if the project name or description contains the query
+    func matchesSearch(query: String) -> Bool {
+        let lowercasedQuery = query.lowercased()
+
+        // Check name
+        if name.lowercased().contains(lowercasedQuery) {
+            return true
+        }
+
+        // Check description
+        if let description = description,
+           description.lowercased().contains(lowercasedQuery) {
+            return true
+        }
+
+        return false
+    }
 }
 
 /// Response wrapper for projects list endpoint
