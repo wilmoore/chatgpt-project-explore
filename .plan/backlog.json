@@ -14,9 +14,8 @@
       "sourceSpec": "spec-001",
       "sourceBranch": "mvp/chatgpt-project-explore",
       "createdAt": "2026-01-01T00:00:00.000Z",
-      "status": "in-progress",
-      "mvpBatch": true,
-      "mvpBatchStartedAt": "2026-01-02T00:00:00.000Z"
+      "status": "resolved",
+      "resolvedAt": "2026-01-02T00:00:00.000Z"
     },
     {
       "id": 2,
@@ -31,9 +30,8 @@
       "sourceSpec": "spec-001",
       "sourceBranch": "mvp/chatgpt-project-explore",
       "createdAt": "2026-01-01T00:00:00.000Z",
-      "status": "in-progress",
-      "mvpBatch": true,
-      "mvpBatchStartedAt": "2026-01-02T00:00:00.000Z"
+      "status": "resolved",
+      "resolvedAt": "2026-01-02T00:00:00.000Z"
     },
     {
       "id": 3,
@@ -48,9 +46,8 @@
       "sourceSpec": "spec-001",
       "sourceBranch": "mvp/chatgpt-project-explore",
       "createdAt": "2026-01-01T00:00:00.000Z",
-      "status": "in-progress",
-      "mvpBatch": true,
-      "mvpBatchStartedAt": "2026-01-02T00:00:00.000Z"
+      "status": "resolved",
+      "resolvedAt": "2026-01-02T00:00:00.000Z"
     },
     {
       "id": 4,
@@ -65,9 +62,8 @@
       "sourceSpec": "spec-001",
       "sourceBranch": "mvp/chatgpt-project-explore",
       "createdAt": "2026-01-01T00:00:00.000Z",
-      "status": "in-progress",
-      "mvpBatch": true,
-      "mvpBatchStartedAt": "2026-01-02T00:00:00.000Z"
+      "status": "resolved",
+      "resolvedAt": "2026-01-02T00:00:00.000Z"
     },
     {
       "id": 5,
@@ -207,9 +203,8 @@
       "sourceSpec": "spec-001",
       "sourceBranch": "mvp/chatgpt-project-explore",
       "createdAt": "2026-01-01T00:00:00.000Z",
-      "status": "in-progress",
-      "mvpBatch": true,
-      "mvpBatchStartedAt": "2026-01-02T00:00:00.000Z"
+      "status": "resolved",
+      "resolvedAt": "2026-01-02T00:00:00.000Z"
     },
     {
       "id": 14,
@@ -224,9 +219,8 @@
       "sourceSpec": "spec-001",
       "sourceBranch": "mvp/chatgpt-project-explore",
       "createdAt": "2026-01-01T00:00:00.000Z",
-      "status": "in-progress",
-      "mvpBatch": true,
-      "mvpBatchStartedAt": "2026-01-02T00:00:00.000Z"
+      "status": "resolved",
+      "resolvedAt": "2026-01-02T00:00:00.000Z"
     },
     {
       "id": 15,
