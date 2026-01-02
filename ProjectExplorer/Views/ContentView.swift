@@ -8,6 +8,7 @@ import AppKit
 /// Main container view for the app
 struct ContentView: View {
     @StateObject private var settings = AppSettings()
+    @EnvironmentObject private var appState: AppState
 
     var body: some View {
         NavigationStack {
@@ -31,24 +32,29 @@ enum LoadingState<T> {
 /// View displaying the list of projects with search functionality
 struct ProjectListView: View {
     @ObservedObject var settings: AppSettings
+    @EnvironmentObject private var appState: AppState
     @State private var loadingState: LoadingState<[Project]> = .idle
     @State private var refreshTask: Task<Void, Never>?
     @State private var searchText: String = ""
 
     private let apiClient = APIClient()
 
-    /// Filters projects based on the current search text
-    private var filteredProjects: [Project] {
+    /// All loaded projects
+    private var allProjects: [Project] {
         guard case .loaded(let projects) = loadingState else {
             return []
         }
+        return projects
+    }
 
+    /// Filters projects based on the current search text
+    private var filteredProjects: [Project] {
         let trimmedQuery = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedQuery.isEmpty else {
-            return projects
+            return allProjects
         }
 
-        return projects.filter { project in
+        return allProjects.filter { project in
             project.matchesSearch(query: trimmedQuery)
         }
     }
@@ -106,6 +112,9 @@ struct ProjectListView: View {
                 }
             }
         }
+        .onChange(of: appState.pendingProjectId) { _, pendingId in
+            handlePendingProject(pendingId)
+        }
     }
 
     private func loadProjects() {
@@ -116,6 +125,8 @@ struct ProjectListView: View {
                 let projects = try await apiClient.fetchProjects(baseURL: settings.baseAPIURL)
                 if !Task.isCancelled {
                     loadingState = .loaded(projects)
+                    // Index projects for Spotlight search
+                    SpotlightIndexer.indexProjects(projects)
                 }
             } catch {
                 if !Task.isCancelled {
@@ -129,6 +140,8 @@ struct ProjectListView: View {
         do {
             let projects = try await apiClient.fetchProjects(baseURL: settings.baseAPIURL)
             loadingState = .loaded(projects)
+            // Re-index projects for Spotlight search
+            SpotlightIndexer.indexProjects(projects)
         } catch {
             // On refresh failure, keep existing data but show error somehow
             // For now, just update to error state
@@ -143,6 +156,17 @@ struct ProjectListView: View {
         #elseif os(macOS)
         NSWorkspace.shared.open(project.openURL)
         #endif
+    }
+
+    /// Handles a pending project ID from Spotlight or deep link
+    private func handlePendingProject(_ projectId: String?) {
+        guard let projectId = projectId else { return }
+
+        // Find the project and open it
+        if let project = allProjects.first(where: { $0.id == projectId }) {
+            openProject(project)
+            appState.clearPendingProject()
+        }
     }
 }
 
@@ -168,4 +192,5 @@ struct ProjectRow: View {
 
 #Preview {
     ContentView()
+        .environmentObject(AppState())
 }
