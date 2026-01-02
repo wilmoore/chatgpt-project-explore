@@ -1,4 +1,9 @@
 import SwiftUI
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
 /// Main container view for the app
 struct ContentView: View {
@@ -71,6 +76,9 @@ struct ProjectListView: View {
                 } else {
                     List(filteredProjects) { project in
                         ProjectRow(project: project)
+                            .onTapGesture {
+                                openProject(project)
+                            }
                     }
                     .refreshable {
                         await refreshProjects()
@@ -126,6 +134,15 @@ struct ProjectListView: View {
             // For now, just update to error state
             loadingState = .error(error)
         }
+    }
+
+    /// Opens a project's URL in the external browser (ChatGPT)
+    private func openProject(_ project: Project) {
+        #if os(iOS)
+        UIApplication.shared.open(project.openURL)
+        #elseif os(macOS)
+        NSWorkspace.shared.open(project.openURL)
+        #endif
     }
 }
 
