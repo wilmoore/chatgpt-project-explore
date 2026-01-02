@@ -115,6 +115,9 @@ struct ProjectListView: View {
         .onChange(of: appState.pendingProjectId) { _, pendingId in
             handlePendingProject(pendingId)
         }
+        .onChange(of: appState.pendingOpenURL) { _, pendingURL in
+            handlePendingOpenURL(pendingURL)
+        }
     }
 
     private func loadProjects() {
@@ -167,6 +170,20 @@ struct ProjectListView: View {
             openProject(project)
             appState.clearPendingProject()
         }
+    }
+
+    /// Handles a pending URL from Share Extension
+    private func handlePendingOpenURL(_ url: URL?) {
+        guard let url = url else { return }
+
+        // Open the URL directly in the external browser (ChatGPT)
+        #if os(iOS)
+        UIApplication.shared.open(url)
+        #elseif os(macOS)
+        NSWorkspace.shared.open(url)
+        #endif
+
+        appState.clearPendingOpenURL()
     }
 }
 
