@@ -133,4 +133,52 @@ actor APIClient {
 
         return meta
     }
+
+    /// Fetches all projects from the API
+    /// - Parameter baseURL: The base URL of the API
+    /// - Returns: Array of projects
+    func fetchProjects(baseURL: String) async throws -> [Project] {
+        guard var urlComponents = URLComponents(string: baseURL) else {
+            throw APIError.invalidURL
+        }
+
+        // Ensure path ends with /projects
+        if !urlComponents.path.hasSuffix("/projects") {
+            if urlComponents.path.hasSuffix("/") {
+                urlComponents.path += "projects"
+            } else {
+                urlComponents.path += "/projects"
+            }
+        }
+
+        guard let url = urlComponents.url else {
+            throw APIError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 30
+
+        let (data, response): (Data, URLResponse)
+        do {
+            (data, response) = try await session.data(for: request)
+        } catch {
+            throw APIError.networkError(error)
+        }
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw APIError.httpError(httpResponse.statusCode)
+        }
+
+        do {
+            let projectsResponse = try JSONDecoder().decode(ProjectsResponse.self, from: data)
+            return projectsResponse.projects
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
 }
