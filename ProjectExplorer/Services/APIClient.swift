@@ -38,6 +38,38 @@ struct APIMetaResponse: Codable {
         case name
         case projectCount = "project_count"
     }
+
+    /// Required fields that must be present for API compatibility
+    static let requiredFields = ["version"]
+
+    /// Validates that all required fields are present
+    /// - Throws: APIError.missingRequiredFields if any required fields are missing
+    func validateRequiredFields() throws {
+        var missingFields: [String] = []
+
+        if version == nil || version?.isEmpty == true {
+            missingFields.append("version")
+        }
+
+        if !missingFields.isEmpty {
+            throw APIError.missingRequiredFields(missingFields)
+        }
+    }
+
+    /// Returns a human-readable description of the API
+    var displayDescription: String {
+        var parts: [String] = []
+        if let name = name, !name.isEmpty {
+            parts.append(name)
+        }
+        if let version = version, !version.isEmpty {
+            parts.append("v\(version)")
+        }
+        if let count = projectCount {
+            parts.append("\(count) projects")
+        }
+        return parts.isEmpty ? "API Connected" : parts.joined(separator: " • ")
+    }
 }
 
 /// Client for interacting with the Project Index API
@@ -89,11 +121,16 @@ actor APIClient {
             throw APIError.httpError(httpResponse.statusCode)
         }
 
+        let meta: APIMetaResponse
         do {
-            let meta = try JSONDecoder().decode(APIMetaResponse.self, from: data)
-            return meta
+            meta = try JSONDecoder().decode(APIMetaResponse.self, from: data)
         } catch {
             throw APIError.decodingError(error)
         }
+
+        // Validate required fields are present
+        try meta.validateRequiredFields()
+
+        return meta
     }
 }

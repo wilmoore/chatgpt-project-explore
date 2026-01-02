@@ -5,6 +5,7 @@ struct SettingsView: View {
     @ObservedObject var settings: AppSettings
     @State private var urlInput: String = ""
     @State private var isValidating = false
+    @State private var apiInfo: APIMetaResponse?
 
     private let apiClient = APIClient()
 
@@ -41,12 +42,29 @@ struct SettingsView: View {
                 .disabled(urlInput.isEmpty || isValidating)
             }
 
-            if settings.validationState.isValid {
+            if settings.validationState.isValid, let info = apiInfo {
                 Section {
-                    Label("API Connected", systemImage: "checkmark.circle.fill")
-                        .foregroundColor(.green)
+                    LabeledContent("Status") {
+                        Label("Connected", systemImage: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                    }
+
+                    if let version = info.version {
+                        LabeledContent("Version", value: version)
+                    }
+
+                    if let name = info.name {
+                        LabeledContent("Name", value: name)
+                    }
+
+                    if let count = info.projectCount {
+                        LabeledContent("Projects", value: "\(count)")
+                    }
                 } header: {
-                    Text("Status")
+                    Text("API Information")
+                } footer: {
+                    Text("Required fields validated: version")
+                        .foregroundColor(.secondary)
                 }
             }
         }
@@ -79,16 +97,19 @@ struct SettingsView: View {
 
         isValidating = true
         settings.validationState = .validating
+        apiInfo = nil
 
         Task {
             do {
-                _ = try await apiClient.validateAPI(baseURL: settings.baseAPIURL)
+                let meta = try await apiClient.validateAPI(baseURL: settings.baseAPIURL)
                 await MainActor.run {
+                    apiInfo = meta
                     settings.validationState = .valid
                     isValidating = false
                 }
             } catch {
                 await MainActor.run {
+                    apiInfo = nil
                     settings.validationState = .invalid(error.localizedDescription)
                     isValidating = false
                 }
