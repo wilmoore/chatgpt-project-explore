@@ -45,3 +45,7 @@ build/
 *.env
 *.env.*
 !*.env.example
+
+# Node.js (Raycast extension)
+node_modules/
+extensions/raycast/dist/
