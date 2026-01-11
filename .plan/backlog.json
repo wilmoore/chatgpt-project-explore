@@ -1,5 +1,5 @@
 {
-  "lastSequence": 16,
+  "lastSequence": 17,
   "items": [
     {
       "id": 1,
@@ -91,9 +91,9 @@
       "fingerprint": "spec|spec-001|epic|e006-desktop-integrations",
       "source": "/pro:spec.import",
       "sourceSpec": "spec-001",
-      "sourceBranch": null,
+      "sourceBranch": "feature/raycast-extension",
       "createdAt": "2026-01-01T00:00:00.000Z",
-      "status": "open"
+      "status": "in-progress"
     },
     {
       "id": 7,
@@ -251,6 +251,18 @@
       "sourceBranch": null,
       "createdAt": "2026-01-01T00:00:00.000Z",
       "status": "open"
+    },
+    {
+      "id": 17,
+      "title": "Raycast Extension for Project Search",
+      "description": "Implement a Raycast extension that provides Command-K style quick search and open for ChatGPT projects. Supports both custom API and Supabase REST API (per ADR-003). User configures API URL via Raycast preferences.",
+      "category": "feature",
+      "severity": "medium",
+      "fingerprint": "feature|17|raycast-extension-project-search",
+      "source": "/pro:feature",
+      "sourceBranch": "feature/raycast-extension",
+      "createdAt": "2026-01-09T00:00:00.000Z",
+      "status": "in-progress"
     }
   ]
 }

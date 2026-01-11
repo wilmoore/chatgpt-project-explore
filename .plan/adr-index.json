@@ -1,5 +1,5 @@
 {
-  "lastSequence": 3,
+  "lastSequence": 4,
   "entries": [
     {
       "branch": "mvp/chatgpt-project-explore",
@@ -7,6 +7,12 @@
         "001-swiftui-actor-api-client.md",
         "002-xcodegen-project-generation.md",
         "003-support-multiple-api-formats.md"
+      ]
+    },
+    {
+      "branch": "feature/raycast-extension",
+      "adrs": [
+        "004-raycast-extension-architecture.md"
       ]
     }
   ]
