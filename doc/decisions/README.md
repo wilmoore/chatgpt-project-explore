@@ -22,3 +22,4 @@ We use the [Michael Nygard format](https://cognitect.com/blog/2011/11/15/documen
 - [002. Use XcodeGen for Project Generation](002-xcodegen-project-generation.md)
 - [003. Support Multiple API Formats](003-support-multiple-api-formats.md)
 - [004. Raycast Extension Architecture](004-raycast-extension-architecture.md)
+- [005. Touch Project API Integration](005-touch-project-api-integration.md)
