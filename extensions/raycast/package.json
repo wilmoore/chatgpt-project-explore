@@ -22,6 +22,14 @@
       "title": "API URL",
       "description": "Base URL of your Project Index API (e.g., https://your-api.com or https://xyz.supabase.co/rest/v1)",
       "placeholder": "https://your-project-index-api.com"
+    },
+    {
+      "name": "showTouchToast",
+      "type": "checkbox",
+      "required": false,
+      "default": true,
+      "label": "Show Touch Notification",
+      "description": "Show a toast notification when a project is touched"
     }
   ],
   "dependencies": {

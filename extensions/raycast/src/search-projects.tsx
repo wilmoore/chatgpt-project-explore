@@ -3,12 +3,14 @@ import {
   ActionPanel,
   Icon,
   List,
+  Toast,
   getPreferenceValues,
   openExtensionPreferences,
+  showToast,
 } from "@raycast/api";
 import { useCachedPromise } from "@raycast/utils";
 import { exec } from "child_process";
-import { fetchProjects, isSupabaseAPI } from "./api";
+import { fetchProjects, isSupabaseAPI, touchProject } from "./api";
 
 /** Opens URL directly in Chrome, bypassing system URL handlers */
 function openInChrome(url: string): void {
@@ -41,10 +43,37 @@ export default function SearchProjects() {
     );
   }
 
-  const { data: projects, isLoading, error, revalidate } = useCachedPromise(fetchProjects);
+  const {
+    data: projects,
+    isLoading,
+    error,
+    revalidate,
+  } = useCachedPromise(fetchProjects);
 
   // Determine API type for display
-  const apiType = isSupabaseAPI(apiUrl) ? "Supabase" : "Custom API";
+  const isSupabase = isSupabaseAPI(apiUrl);
+  const apiType = isSupabase ? "Supabase" : "Custom API";
+
+  /** Handles touch action for a project */
+  async function handleTouchProject(projectId: string, projectName: string) {
+    try {
+      await touchProject(apiUrl, projectId);
+      const showTouchToast = preferences.showTouchToast ?? true;
+      if (showTouchToast) {
+        await showToast({
+          style: Toast.Style.Success,
+          title: "Project Touched",
+          message: `${projectName} will move to top`,
+        });
+      }
+    } catch (error) {
+      await showToast({
+        style: Toast.Style.Failure,
+        title: "Touch Failed",
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }
 
   if (error) {
     return (
@@ -52,11 +81,21 @@ export default function SearchProjects() {
         <List.EmptyView
           icon={Icon.ExclamationMark}
           title="Failed to Load Projects"
-          description={error.message || "Please check your API URL and try again."}
+          description={
+            error.message || "Please check your API URL and try again."
+          }
           actions={
             <ActionPanel>
-              <Action title="Retry" icon={Icon.ArrowClockwise} onAction={revalidate} />
-              <Action title="Open Preferences" icon={Icon.Gear} onAction={openExtensionPreferences} />
+              <Action
+                title="Retry"
+                icon={Icon.ArrowClockwise}
+                onAction={revalidate}
+              />
+              <Action
+                title="Open Preferences"
+                icon={Icon.Gear}
+                onAction={openExtensionPreferences}
+              />
             </ActionPanel>
           }
         />
@@ -65,8 +104,15 @@ export default function SearchProjects() {
   }
 
   return (
-    <List isLoading={isLoading} searchBarPlaceholder="Search projects..." throttle>
-      <List.Section title="Projects" subtitle={`${projects?.length ?? 0} projects via ${apiType}`}>
+    <List
+      isLoading={isLoading}
+      searchBarPlaceholder="Search projects..."
+      throttle
+    >
+      <List.Section
+        title="Projects"
+        subtitle={`${projects?.length ?? 0} projects via ${apiType}`}
+      >
         {projects?.map((project) => (
           <List.Item
             key={project.id}
@@ -74,7 +120,9 @@ export default function SearchProjects() {
             subtitle={project.description}
             accessories={[
               {
-                date: project.updatedAt ? new Date(project.updatedAt) : undefined,
+                date: project.updatedAt
+                  ? new Date(project.updatedAt)
+                  : undefined,
                 tooltip: project.updatedAt ? "Last updated" : undefined,
               },
             ]}
@@ -87,7 +135,7 @@ export default function SearchProjects() {
                     onAction={() => openInChrome(project.openUrl)}
                   />
                   <Action.Open
-                    title="Open in ChatGPT App"
+                    title="Open in Chatgpt App"
                     target={project.openUrl}
                     icon={Icon.AppWindow}
                     shortcut={{ modifiers: ["opt"], key: "return" }}
@@ -98,6 +146,18 @@ export default function SearchProjects() {
                     shortcut={{ modifiers: ["cmd"], key: "c" }}
                   />
                 </ActionPanel.Section>
+                {isSupabase && (
+                  <ActionPanel.Section>
+                    <Action
+                      title="Touch Project"
+                      icon={Icon.ArrowUp}
+                      shortcut={{ modifiers: ["cmd"], key: "t" }}
+                      onAction={() =>
+                        handleTouchProject(project.id, project.name)
+                      }
+                    />
+                  </ActionPanel.Section>
+                )}
                 <ActionPanel.Section>
                   <Action
                     title="Refresh"
