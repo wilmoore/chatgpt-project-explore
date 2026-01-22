@@ -8,9 +8,13 @@ import {
 } from "@raycast/api";
 import { useCachedPromise, usePromise } from "@raycast/utils";
 import { exec } from "child_process";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { fetchProjects, isSupabaseAPI, isEdgeFunctionAPI } from "./api";
-import { addRecentProject, getRecentProjectIds } from "./recent-projects";
+import {
+  addRecentProject,
+  getRecentProjectIds,
+  pruneStaleRecents,
+} from "./recent-projects";
 import type { Project } from "./types";
 
 /** Opens URL directly in Chrome, bypassing system URL handlers */
@@ -66,6 +70,14 @@ export default function SearchProjects() {
     : isSupabaseAPI(apiUrl)
       ? "Supabase"
       : "Custom API";
+
+  // Prune stale recents when projects are fetched
+  useEffect(() => {
+    if (projects && projects.length > 0) {
+      const validIds = new Set(projects.map((p) => p.id));
+      pruneStaleRecents(validIds).then(() => revalidateRecents());
+    }
+  }, [projects]);
 
   const isLoading = isLoadingProjects || isLoadingRecents;
 
