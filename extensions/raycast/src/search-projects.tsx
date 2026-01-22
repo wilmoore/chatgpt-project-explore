@@ -9,7 +9,7 @@ import {
 import { useCachedPromise, usePromise } from "@raycast/utils";
 import { exec } from "child_process";
 import { useState } from "react";
-import { fetchProjects, isSupabaseAPI } from "./api";
+import { fetchProjects, isSupabaseAPI, isEdgeFunctionAPI } from "./api";
 import { addRecentProject, getRecentProjectIds } from "./recent-projects";
 import type { Project } from "./types";
 
@@ -61,8 +61,11 @@ export default function SearchProjects() {
   } = usePromise(getRecentProjectIds);
 
   // Determine API type for display
-  const isSupabase = isSupabaseAPI(apiUrl);
-  const apiType = isSupabase ? "Supabase" : "Custom API";
+  const apiType = isEdgeFunctionAPI(apiUrl)
+    ? "Edge Function"
+    : isSupabaseAPI(apiUrl)
+      ? "Supabase"
+      : "Custom API";
 
   const isLoading = isLoadingProjects || isLoadingRecents;
 
