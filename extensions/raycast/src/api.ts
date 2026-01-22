@@ -5,7 +5,6 @@ import type {
   CustomAPIProject,
   SupabaseProject,
 } from "./types";
-import { SUPABASE_ANON_KEY } from "./constants";
 
 /**
  * Detects if the URL points to a Supabase REST API.
@@ -126,39 +125,5 @@ export async function fetchProjects(): Promise<Project[]> {
     return await fetchSupabaseProjects(apiUrl);
   } else {
     return await fetchCustomAPIProjects(apiUrl);
-  }
-}
-
-/**
- * Queues a touch request for a project.
- * Only works with Supabase API.
- * Touch moves the project to the top of the list within 5-10 seconds
- * when the indexer is running in watch mode.
- */
-export async function touchProject(
-  baseUrl: string,
-  projectId: string,
-): Promise<void> {
-  if (!isSupabaseAPI(baseUrl)) {
-    throw new Error("Touch is only available with Supabase API");
-  }
-
-  // Build touch_queue endpoint
-  // e.g., http://127.0.0.1:54321/rest/v1/touch_queue
-  const normalizedUrl = normalizeBaseUrl(baseUrl);
-  const baseApiUrl = normalizedUrl.replace(/\/projects$/, "");
-  const touchUrl = `${baseApiUrl}/touch_queue`;
-
-  const response = await fetch(touchUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: SUPABASE_ANON_KEY,
-    },
-    body: JSON.stringify({ project_id: projectId }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Touch failed: HTTP ${response.status}`);
   }
 }

@@ -24,12 +24,12 @@
       "placeholder": "https://your-project-index-api.com"
     },
     {
-      "name": "showTouchToast",
-      "type": "checkbox",
+      "name": "recentCount",
+      "type": "textfield",
       "required": false,
-      "default": true,
-      "label": "Show Touch Notification",
-      "description": "Show a toast notification when a project is touched"
+      "default": "3",
+      "title": "Recent Projects Count",
+      "description": "Number of recently opened projects to show at the top (0 to disable)"
     }
   ],
   "dependencies": {

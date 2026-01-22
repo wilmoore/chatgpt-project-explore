@@ -10,8 +10,8 @@
 type ExtensionPreferences = {
   /** API URL - Base URL of your Project Index API (e.g., https://your-api.com or https://xyz.supabase.co/rest/v1) */
   "apiUrl": string,
-  /** undefined - Show a toast notification when a project is touched */
-  "showTouchToast": boolean
+  /** Recent Projects Count - Number of recently opened projects to show at the top (0 to disable) */
+  "recentCount": string
 }
 
 /** Preferences accessible in all the extension's commands */

@@ -1,5 +1,5 @@
 {
-  "lastSequence": 5,
+  "lastSequence": 6,
   "entries": [
     {
       "branch": "mvp/chatgpt-project-explore",
@@ -19,6 +19,12 @@
       "branch": "feat/raycast-touch-project-api",
       "adrs": [
         "005-touch-project-api-integration.md"
+      ]
+    },
+    {
+      "branch": "feat/raycast-copy-project-title",
+      "adrs": [
+        "006-local-recent-projects-tracking.md"
       ]
     }
   ]

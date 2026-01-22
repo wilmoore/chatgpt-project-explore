@@ -3,14 +3,15 @@ import {
   ActionPanel,
   Icon,
   List,
-  Toast,
   getPreferenceValues,
   openExtensionPreferences,
-  showToast,
 } from "@raycast/api";
-import { useCachedPromise } from "@raycast/utils";
+import { useCachedPromise, usePromise } from "@raycast/utils";
 import { exec } from "child_process";
-import { fetchProjects, isSupabaseAPI, touchProject } from "./api";
+import { useState } from "react";
+import { fetchProjects, isSupabaseAPI } from "./api";
+import { addRecentProject, getRecentProjectIds } from "./recent-projects";
+import type { Project } from "./types";
 
 /** Opens URL directly in Chrome, bypassing system URL handlers */
 function openInChrome(url: string): void {
@@ -20,6 +21,9 @@ function openInChrome(url: string): void {
 export default function SearchProjects() {
   const preferences = getPreferenceValues<Preferences>();
   const apiUrl = preferences.apiUrl;
+  const recentCount = parseInt(preferences.recentCount || "3", 10);
+
+  const [searchText, setSearchText] = useState("");
 
   // Show setup screen if API URL is not configured
   if (!apiUrl) {
@@ -45,34 +49,124 @@ export default function SearchProjects() {
 
   const {
     data: projects,
-    isLoading,
+    isLoading: isLoadingProjects,
     error,
     revalidate,
   } = useCachedPromise(fetchProjects);
+
+  const {
+    data: recentIds,
+    isLoading: isLoadingRecents,
+    revalidate: revalidateRecents,
+  } = usePromise(getRecentProjectIds);
 
   // Determine API type for display
   const isSupabase = isSupabaseAPI(apiUrl);
   const apiType = isSupabase ? "Supabase" : "Custom API";
 
-  /** Handles touch action for a project */
-  async function handleTouchProject(projectId: string, projectName: string) {
-    try {
-      await touchProject(apiUrl, projectId);
-      const showTouchToast = preferences.showTouchToast ?? true;
-      if (showTouchToast) {
-        await showToast({
-          style: Toast.Style.Success,
-          title: "Project Touched",
-          message: `${projectName} will move to top`,
-        });
+  const isLoading = isLoadingProjects || isLoadingRecents;
+
+  // Build recent projects list (only IDs that still exist)
+  const recentProjects: Project[] = [];
+  const recentIdSet = new Set<string>();
+
+  if (projects && recentIds && recentCount > 0) {
+    const projectMap = new Map(projects.map((p) => [p.id, p]));
+    for (const id of recentIds.slice(0, recentCount)) {
+      const project = projectMap.get(id);
+      if (project) {
+        recentProjects.push(project);
+        recentIdSet.add(id);
       }
-    } catch (error) {
-      await showToast({
-        style: Toast.Style.Failure,
-        title: "Touch Failed",
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
     }
+  }
+
+  // Filter projects by search text
+  const searchLower = searchText.toLowerCase().trim();
+  const matchesSearch = (project: Project) =>
+    searchLower.length === 0 ||
+    project.name.toLowerCase().includes(searchLower) ||
+    project.description?.toLowerCase().includes(searchLower);
+
+  // Only show recents when not searching
+  const isSearching = searchText.length > 0;
+  const showRecents = !isSearching && recentProjects.length > 0;
+
+  // When searching, include all projects; otherwise exclude recents (they're shown separately)
+  const filteredProjects =
+    projects?.filter((p) => {
+      if (!matchesSearch(p)) return false;
+      if (isSearching) return true; // Include all matches when searching
+      return !recentIdSet.has(p.id); // Exclude recents when not searching
+    }) ?? [];
+
+  /** Opens a project and tracks it as recent */
+  async function handleOpenProject(project: Project, inChrome: boolean) {
+    await addRecentProject(project.id);
+    revalidateRecents();
+
+    if (inChrome) {
+      openInChrome(project.openUrl);
+    }
+    // Note: Action.Open handles its own opening
+  }
+
+  /** Renders the action panel for a project */
+  function renderActions(project: Project) {
+    return (
+      <ActionPanel>
+        <ActionPanel.Section>
+          <Action
+            title="Open in Browser"
+            icon={Icon.Globe}
+            onAction={() => handleOpenProject(project, true)}
+          />
+          <Action.Open
+            title="Open in Chatgpt App"
+            target={project.openUrl}
+            icon={Icon.AppWindow}
+            shortcut={{ modifiers: ["opt"], key: "return" }}
+            onOpen={() => handleOpenProject(project, false)}
+          />
+          <Action.CopyToClipboard
+            title="Copy URL"
+            content={project.openUrl}
+            shortcut={{ modifiers: ["cmd"], key: "c" }}
+          />
+          <Action.CopyToClipboard
+            title="Copy Project Title"
+            content={project.name}
+            shortcut={{ modifiers: ["cmd"], key: "t" }}
+          />
+        </ActionPanel.Section>
+        <ActionPanel.Section>
+          <Action
+            title="Refresh"
+            icon={Icon.ArrowClockwise}
+            shortcut={{ modifiers: ["cmd"], key: "r" }}
+            onAction={revalidate}
+          />
+        </ActionPanel.Section>
+      </ActionPanel>
+    );
+  }
+
+  /** Renders a project list item */
+  function renderProjectItem(project: Project) {
+    return (
+      <List.Item
+        key={project.id}
+        title={project.name}
+        subtitle={project.description}
+        accessories={[
+          {
+            date: project.updatedAt ? new Date(project.updatedAt) : undefined,
+            tooltip: project.updatedAt ? "Last updated" : undefined,
+          },
+        ]}
+        actions={renderActions(project)}
+      />
+    );
   }
 
   if (error) {
@@ -108,68 +202,19 @@ export default function SearchProjects() {
       isLoading={isLoading}
       searchBarPlaceholder="Search projects..."
       throttle
+      filtering={false}
+      onSearchTextChange={setSearchText}
     >
+      {showRecents && (
+        <List.Section title="Recent" subtitle={`${recentProjects.length}`}>
+          {recentProjects.map(renderProjectItem)}
+        </List.Section>
+      )}
       <List.Section
         title="Projects"
-        subtitle={`${projects?.length ?? 0} projects via ${apiType}`}
+        subtitle={`${filteredProjects.length} projects via ${apiType}`}
       >
-        {projects?.map((project) => (
-          <List.Item
-            key={project.id}
-            title={project.name}
-            subtitle={project.description}
-            accessories={[
-              {
-                date: project.updatedAt
-                  ? new Date(project.updatedAt)
-                  : undefined,
-                tooltip: project.updatedAt ? "Last updated" : undefined,
-              },
-            ]}
-            actions={
-              <ActionPanel>
-                <ActionPanel.Section>
-                  <Action
-                    title="Open in Browser"
-                    icon={Icon.Globe}
-                    onAction={() => openInChrome(project.openUrl)}
-                  />
-                  <Action.Open
-                    title="Open in Chatgpt App"
-                    target={project.openUrl}
-                    icon={Icon.AppWindow}
-                    shortcut={{ modifiers: ["opt"], key: "return" }}
-                  />
-                  <Action.CopyToClipboard
-                    title="Copy URL"
-                    content={project.openUrl}
-                    shortcut={{ modifiers: ["cmd"], key: "c" }}
-                  />
-                </ActionPanel.Section>
-                {isSupabase && (
-                  <ActionPanel.Section>
-                    <Action
-                      title="Touch Project"
-                      icon={Icon.ArrowUp}
-                      shortcut={{ modifiers: ["cmd"], key: "t" }}
-                      onAction={() =>
-                        handleTouchProject(project.id, project.name)
-                      }
-                    />
-                  </ActionPanel.Section>
-                )}
-                <ActionPanel.Section>
-                  <Action
-                    title="Refresh"
-                    icon={Icon.ArrowClockwise}
-                    shortcut={{ modifiers: ["cmd"], key: "r" }}
-                    onAction={revalidate}
-                  />
-                </ActionPanel.Section>
-              </ActionPanel>
-            }
-          />
-        ))}
+        {filteredProjects.map(renderProjectItem)}
       </List.Section>
     </List>
   );
