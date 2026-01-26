@@ -24,3 +24,4 @@ We use the [Michael Nygard format](https://cognitect.com/blog/2011/11/15/documen
 - [004. Raycast Extension Architecture](004-raycast-extension-architecture.md)
 - [005. Touch Project API Integration](005-touch-project-api-integration.md)
 - [006. Local Recent Projects Tracking](006-local-recent-projects-tracking.md)
+- [007. Fuse.js for Fuzzy Project Search](007-fusejs-fuzzy-search.md)

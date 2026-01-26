@@ -1,5 +1,5 @@
 {
-  "lastSequence": 6,
+  "lastSequence": 7,
   "entries": [
     {
       "branch": "mvp/chatgpt-project-explore",
@@ -25,6 +25,12 @@
       "branch": "feat/raycast-copy-project-title",
       "adrs": [
         "006-local-recent-projects-tracking.md"
+      ]
+    },
+    {
+      "branch": "fix/search-business-insights-not-found",
+      "adrs": [
+        "007-fusejs-fuzzy-search.md"
       ]
     }
   ]

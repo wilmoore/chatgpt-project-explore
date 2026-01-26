@@ -1,6 +1,18 @@
 {
-  "lastSequence": 17,
+  "lastSequence": 22,
   "items": [
+    {
+      "id": 22,
+      "title": "Search fails to match projects with punctuation separators",
+      "description": "Bug: Searching 'business insights' does not find 'Business :: Insights'. Root cause: String.includes() requires exact substring match, fails with different separators (spaces vs '::'). Fix: Replace with Fuse.js for fuzzy matching.",
+      "category": "bug",
+      "severity": "high",
+      "fingerprint": "bug|22|search-punctuation-separator-mismatch",
+      "source": "/pro:bug",
+      "sourceBranch": "fix/search-business-insights-not-found",
+      "createdAt": "2026-01-23T01:08:00.000Z",
+      "status": "in-progress"
+    },
     {
       "id": 1,
       "title": "API Connectivity and Validation",
@@ -262,6 +274,54 @@
       "source": "/pro:feature",
       "sourceBranch": "feature/raycast-extension",
       "createdAt": "2026-01-09T00:00:00.000Z",
+      "status": "in-progress"
+    },
+    {
+      "id": 18,
+      "title": "Professional README with badges and documentation",
+      "description": "Create a comprehensive README.md with visual badges, screenshots/GIF placeholders, MIT license, installation instructions, API configuration guide, and architecture overview.",
+      "category": "feature",
+      "severity": "medium",
+      "fingerprint": "feature|18|professional-readme",
+      "source": "/pro:feature",
+      "sourceBranch": "feature/professional-readme",
+      "createdAt": "2026-01-12T00:00:00.000Z",
+      "status": "in-progress"
+    },
+    {
+      "id": 19,
+      "title": "Add custom icon to Raycast extension",
+      "description": "Create and add a custom branded icon for the ChatGPT Project Explorer Raycast extension. Currently displays generic green padlock icon instead of a distinctive brand icon.",
+      "category": "feature",
+      "severity": "medium",
+      "fingerprint": "feature|19|raycast-extension-icon",
+      "source": "/pro:backlog.add",
+      "sourceBranch": "feature/raycast-extension",
+      "createdAt": "2026-01-15T00:00:00.000Z",
+      "status": "in-progress"
+    },
+    {
+      "id": 20,
+      "title": "Add Touch Project action to Raycast extension",
+      "description": "Add a 'Touch Project' action to the Raycast extension that queues a touch request to the Supabase touch_queue endpoint. This moves the project to the top of the list so pagination isn't needed when selecting it in ChatGPT. Uses standard local Supabase anon key for authentication. Shows toast notification (configurable).",
+      "category": "feature",
+      "severity": "medium",
+      "fingerprint": "feature|20|raycast-touch-project-api",
+      "source": "/pro:feature",
+      "sourceBranch": "feat/raycast-touch-project-api",
+      "createdAt": "2026-01-15T00:00:00.000Z",
+      "status": "in-progress"
+    },
+    {
+      "id": 21,
+      "title": "Add Copy Project Title action to Raycast extension",
+      "description": "Add a 'Copy Project Title' menu action to the Raycast extension that copies the project name to clipboard. Uses Cmd+Shift+C keyboard shortcut.",
+      "category": "feature",
+      "severity": "medium",
+      "fingerprint": "feature|21|raycast-copy-project-title",
+      "source": "/pro:feature",
+      "sourceBranch": "feat/raycast-copy-project-title",
+      "createdAt": "2026-01-17T00:00:00.000Z",
       "status": "in-progress"
     }
   ]

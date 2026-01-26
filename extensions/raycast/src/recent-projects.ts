@@ -30,3 +30,17 @@ export async function addRecentProject(projectId: string): Promise<void> {
 
   await LocalStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 }
+
+/**
+ * Removes stale IDs from storage that no longer exist in the API.
+ * Call after fetching projects to keep storage clean.
+ */
+export async function pruneStaleRecents(validIds: Set<string>): Promise<void> {
+  const current = await getRecentProjectIds();
+  const pruned = current.filter((id) => validIds.has(id));
+
+  // Only update storage if something was pruned
+  if (pruned.length !== current.length) {
+    await LocalStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));
+  }
+}

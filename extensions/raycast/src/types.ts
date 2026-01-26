@@ -38,13 +38,13 @@ export interface CustomAPIProject {
 
 /**
  * Project from Supabase REST API
+ * Note: URL is constructed from id, not stored in DB
  */
 export interface SupabaseProject {
   id: string;
   title: string;
-  url: string;
   created_at?: string;
-  updated_at?: string;
+  last_confirmed_at?: string;
 }
 
 /**

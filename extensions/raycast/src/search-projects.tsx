@@ -8,10 +8,25 @@ import {
 } from "@raycast/api";
 import { useCachedPromise, usePromise } from "@raycast/utils";
 import { exec } from "child_process";
-import { useState } from "react";
-import { fetchProjects, isSupabaseAPI } from "./api";
-import { addRecentProject, getRecentProjectIds } from "./recent-projects";
+import Fuse from "fuse.js";
+import { useEffect, useMemo, useState } from "react";
+import { fetchProjects, isSupabaseAPI, isEdgeFunctionAPI } from "./api";
+import {
+  addRecentProject,
+  getRecentProjectIds,
+  pruneStaleRecents,
+} from "./recent-projects";
 import type { Project } from "./types";
+
+/** Fuse.js options for fuzzy project search */
+const FUSE_OPTIONS = {
+  keys: [
+    { name: "name", weight: 0.7 },
+    { name: "description", weight: 0.3 },
+  ],
+  threshold: 0.3,
+  ignoreLocation: true,
+};
 
 /** Opens URL directly in Chrome, bypassing system URL handlers */
 function openInChrome(url: string): void {
@@ -61,44 +76,67 @@ export default function SearchProjects() {
   } = usePromise(getRecentProjectIds);
 
   // Determine API type for display
-  const isSupabase = isSupabaseAPI(apiUrl);
-  const apiType = isSupabase ? "Supabase" : "Custom API";
+  const apiType = isEdgeFunctionAPI(apiUrl)
+    ? "Edge Function"
+    : isSupabaseAPI(apiUrl)
+      ? "Supabase"
+      : "Custom API";
+
+  // Prune stale recents when projects are fetched
+  useEffect(() => {
+    if (projects && projects.length > 0) {
+      const validIds = new Set(projects.map((p) => p.id));
+      pruneStaleRecents(validIds).then(() => revalidateRecents());
+    }
+  }, [projects]);
 
   const isLoading = isLoadingProjects || isLoadingRecents;
 
-  // Build recent projects list (only IDs that still exist)
-  const recentProjects: Project[] = [];
-  const recentIdSet = new Set<string>();
+  // Build recent projects list (only IDs that still exist) - memoized
+  const { recentProjects, recentIdSet } = useMemo(() => {
+    const recentProjectsList: Project[] = [];
+    const idSet = new Set<string>();
 
-  if (projects && recentIds && recentCount > 0) {
-    const projectMap = new Map(projects.map((p) => [p.id, p]));
-    for (const id of recentIds.slice(0, recentCount)) {
-      const project = projectMap.get(id);
-      if (project) {
-        recentProjects.push(project);
-        recentIdSet.add(id);
+    if (projects && recentIds && recentCount > 0) {
+      const projectMap = new Map(projects.map((p) => [p.id, p]));
+      for (const id of recentIds.slice(0, recentCount)) {
+        const project = projectMap.get(id);
+        if (project) {
+          recentProjectsList.push(project);
+          idSet.add(id);
+        }
       }
     }
-  }
 
-  // Filter projects by search text
-  const searchLower = searchText.toLowerCase().trim();
-  const matchesSearch = (project: Project) =>
-    searchLower.length === 0 ||
-    project.name.toLowerCase().includes(searchLower) ||
-    project.description?.toLowerCase().includes(searchLower);
+    return { recentProjects: recentProjectsList, recentIdSet: idSet };
+  }, [projects, recentIds, recentCount]);
+
+  // Create Fuse instance once per dataset change
+  const fuse = useMemo(
+    () => (projects ? new Fuse(projects, FUSE_OPTIONS) : null),
+    [projects],
+  );
 
   // Only show recents when not searching
-  const isSearching = searchText.length > 0;
+  const isSearching = searchText.trim().length > 0;
   const showRecents = !isSearching && recentProjects.length > 0;
 
-  // When searching, include all projects; otherwise exclude recents (they're shown separately)
-  const filteredProjects =
-    projects?.filter((p) => {
-      if (!matchesSearch(p)) return false;
-      if (isSearching) return true; // Include all matches when searching
-      return !recentIdSet.has(p.id); // Exclude recents when not searching
-    }) ?? [];
+  // Filter projects: use Fuse.js when searching, full list otherwise
+  const filteredProjects = useMemo(() => {
+    if (!projects) return [];
+
+    const query = searchText.trim();
+
+    // No search query: return all projects (excluding recents when not searching)
+    if (!query) {
+      return projects.filter((p) => !recentIdSet.has(p.id));
+    }
+
+    // Use Fuse.js for fuzzy search
+    if (!fuse) return [];
+    const results = fuse.search(query);
+    return results.map((result) => result.item);
+  }, [projects, searchText, fuse, recentIdSet]);
 
   /** Opens a project and tracks it as recent */
   async function handleOpenProject(project: Project, inChrome: boolean) {
