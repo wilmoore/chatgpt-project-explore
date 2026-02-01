@@ -10,7 +10,8 @@ import { useCachedPromise, usePromise } from "@raycast/utils";
 import { exec } from "child_process";
 import Fuse from "fuse.js";
 import { useEffect, useMemo, useState } from "react";
-import { fetchProjects, isSupabaseAPI, isEdgeFunctionAPI } from "./api";
+import { fetchProjects } from "./api";
+import { STRINGS } from "./constants";
 import {
   addRecentProject,
   getRecentProjectIds,
@@ -46,12 +47,12 @@ export default function SearchProjects() {
       <List>
         <List.EmptyView
           icon={Icon.Gear}
-          title="API URL Not Configured"
-          description="Please configure your Project Index API URL in extension preferences."
+          title={STRINGS.setup.title}
+          description={STRINGS.setup.description}
           actions={
             <ActionPanel>
               <Action
-                title="Open Preferences"
+                title={STRINGS.setup.openPreferences}
                 icon={Icon.Gear}
                 onAction={openExtensionPreferences}
               />
@@ -74,13 +75,6 @@ export default function SearchProjects() {
     isLoading: isLoadingRecents,
     revalidate: revalidateRecents,
   } = usePromise(getRecentProjectIds);
-
-  // Determine API type for display
-  const apiType = isEdgeFunctionAPI(apiUrl)
-    ? "Edge Function"
-    : isSupabaseAPI(apiUrl)
-      ? "Supabase"
-      : "Custom API";
 
   // Prune stale recents when projects are fetched
   useEffect(() => {
@@ -155,31 +149,31 @@ export default function SearchProjects() {
       <ActionPanel>
         <ActionPanel.Section>
           <Action
-            title="Open in Browser"
+            title={STRINGS.actions.openInBrowser}
             icon={Icon.Globe}
             onAction={() => handleOpenProject(project, true)}
           />
           <Action.Open
-            title="Open in Chatgpt App"
+            title={STRINGS.actions.openInChatGPTApp}
             target={project.openUrl}
             icon={Icon.AppWindow}
             shortcut={{ modifiers: ["opt"], key: "return" }}
             onOpen={() => handleOpenProject(project, false)}
           />
           <Action.CopyToClipboard
-            title="Copy URL"
+            title={STRINGS.actions.copyUrl}
             content={project.openUrl}
             shortcut={{ modifiers: ["cmd"], key: "c" }}
           />
           <Action.CopyToClipboard
-            title="Copy Project Title"
+            title={STRINGS.actions.copyProjectTitle}
             content={project.name}
             shortcut={{ modifiers: ["cmd"], key: "t" }}
           />
         </ActionPanel.Section>
         <ActionPanel.Section>
           <Action
-            title="Refresh"
+            title={STRINGS.actions.refresh}
             icon={Icon.ArrowClockwise}
             shortcut={{ modifiers: ["cmd"], key: "r" }}
             onAction={revalidate}
@@ -199,7 +193,9 @@ export default function SearchProjects() {
         accessories={[
           {
             date: project.updatedAt ? new Date(project.updatedAt) : undefined,
-            tooltip: project.updatedAt ? "Last updated" : undefined,
+            tooltip: project.updatedAt
+              ? STRINGS.tooltips.lastUpdated
+              : undefined,
           },
         ]}
         actions={renderActions(project)}
@@ -212,19 +208,17 @@ export default function SearchProjects() {
       <List>
         <List.EmptyView
           icon={Icon.ExclamationMark}
-          title="Failed to Load Projects"
-          description={
-            error.message || "Please check your API URL and try again."
-          }
+          title={STRINGS.error.title}
+          description={error.message || STRINGS.error.fallbackDescription}
           actions={
             <ActionPanel>
               <Action
-                title="Retry"
+                title={STRINGS.error.retry}
                 icon={Icon.ArrowClockwise}
                 onAction={revalidate}
               />
               <Action
-                title="Open Preferences"
+                title={STRINGS.error.openPreferences}
                 icon={Icon.Gear}
                 onAction={openExtensionPreferences}
               />
@@ -238,19 +232,22 @@ export default function SearchProjects() {
   return (
     <List
       isLoading={isLoading}
-      searchBarPlaceholder="Search projects..."
+      searchBarPlaceholder={STRINGS.search.placeholder}
       throttle
       filtering={false}
       onSearchTextChange={setSearchText}
     >
       {showRecents && (
-        <List.Section title="Recent" subtitle={`${recentProjects.length}`}>
+        <List.Section
+          title={STRINGS.sections.recent}
+          subtitle={`${recentProjects.length}`}
+        >
           {recentProjects.map(renderProjectItem)}
         </List.Section>
       )}
       <List.Section
-        title="Projects"
-        subtitle={`${filteredProjects.length} projects via ${apiType}`}
+        title={STRINGS.sections.projects}
+        subtitle={STRINGS.sections.projectsSubtitle(filteredProjects.length)}
       >
         {filteredProjects.map(renderProjectItem)}
       </List.Section>

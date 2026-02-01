@@ -25,3 +25,4 @@ We use the [Michael Nygard format](https://cognitect.com/blog/2011/11/15/documen
 - [005. Touch Project API Integration](005-touch-project-api-integration.md)
 - [006. Local Recent Projects Tracking](006-local-recent-projects-tracking.md)
 - [007. Fuse.js for Fuzzy Project Search](007-fusejs-fuzzy-search.md)
+- [008. i18n Constants for User-Facing Strings](008-i18n-constants-for-user-facing-strings.md)

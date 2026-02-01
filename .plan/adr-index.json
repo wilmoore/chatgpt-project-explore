@@ -1,5 +1,5 @@
 {
-  "lastSequence": 7,
+  "lastSequence": 8,
   "entries": [
     {
       "branch": "mvp/chatgpt-project-explore",
@@ -31,6 +31,12 @@
       "branch": "fix/search-business-insights-not-found",
       "adrs": [
         "007-fusejs-fuzzy-search.md"
+      ]
+    },
+    {
+      "branch": "fix/remove-technical-edge-function-label-add-i18n",
+      "adrs": [
+        "008-i18n-constants-for-user-facing-strings.md"
       ]
     }
   ]
