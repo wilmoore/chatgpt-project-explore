@@ -21,10 +21,10 @@
     {
       "name": "apiUrl",
       "type": "textfield",
-      "required": true,
-      "title": "API URL",
-      "description": "Base URL of your Project Index API (e.g., https://your-api.com or https://xyz.supabase.co/rest/v1)",
-      "placeholder": "https://your-project-index-api.com"
+      "required": false,
+      "title": "API URL (Optional)",
+      "description": "Auto-discovered from ~/.chatgpt-indexer/api-url.json. Only set manually for custom API endpoints.",
+      "placeholder": "Auto-discovered from chatgpt-indexer"
     },
     {
       "name": "recentCount",

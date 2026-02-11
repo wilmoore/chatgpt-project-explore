@@ -10,7 +10,7 @@ import { useCachedPromise, usePromise } from "@raycast/utils";
 import { exec } from "child_process";
 import Fuse from "fuse.js";
 import { useEffect, useMemo, useState } from "react";
-import { fetchProjects } from "./api";
+import { fetchProjects, getCurrentApiUrl } from "./api";
 import { STRINGS } from "./constants";
 import {
   addRecentProject,
@@ -36,32 +36,12 @@ function openInChrome(url: string): void {
 
 export default function SearchProjects() {
   const preferences = getPreferenceValues<Preferences>();
-  const apiUrl = preferences.apiUrl;
   const recentCount = parseInt(preferences.recentCount || "3", 10);
 
   const [searchText, setSearchText] = useState("");
 
-  // Show setup screen if API URL is not configured
-  if (!apiUrl) {
-    return (
-      <List>
-        <List.EmptyView
-          icon={Icon.Gear}
-          title={STRINGS.setup.title}
-          description={STRINGS.setup.description}
-          actions={
-            <ActionPanel>
-              <Action
-                title={STRINGS.setup.openPreferences}
-                icon={Icon.Gear}
-                onAction={openExtensionPreferences}
-              />
-            </ActionPanel>
-          }
-        />
-      </List>
-    );
-  }
+  // Get current API URL for display
+  const apiUrlInfo = getCurrentApiUrl();
 
   const {
     data: projects,
@@ -178,6 +158,13 @@ export default function SearchProjects() {
             shortcut={{ modifiers: ["cmd"], key: "r" }}
             onAction={revalidate}
           />
+          {apiUrlInfo && (
+            <Action.CopyToClipboard
+              title={STRINGS.actions.copyApiUrl}
+              content={apiUrlInfo.url}
+              icon={Icon.Link}
+            />
+          )}
         </ActionPanel.Section>
       </ActionPanel>
     );
@@ -229,6 +216,9 @@ export default function SearchProjects() {
     );
   }
 
+  // Show empty view when no projects at all
+  const hasNoProjects = !isLoading && projects && projects.length === 0;
+
   return (
     <List
       isLoading={isLoading}
@@ -237,20 +227,44 @@ export default function SearchProjects() {
       filtering={false}
       onSearchTextChange={setSearchText}
     >
-      {showRecents && (
-        <List.Section
-          title={STRINGS.sections.recent}
-          subtitle={`${recentProjects.length}`}
-        >
-          {recentProjects.map(renderProjectItem)}
-        </List.Section>
+      {hasNoProjects && apiUrlInfo ? (
+        <List.EmptyView
+          icon={Icon.MagnifyingGlass}
+          title={STRINGS.noResults.title}
+          description={STRINGS.noResults.description(apiUrlInfo.url)}
+          actions={
+            <ActionPanel>
+              <Action
+                title={STRINGS.actions.refresh}
+                icon={Icon.ArrowClockwise}
+                onAction={revalidate}
+              />
+              <Action.CopyToClipboard
+                title={STRINGS.actions.copyApiUrl}
+                content={apiUrlInfo.url}
+                icon={Icon.Link}
+              />
+            </ActionPanel>
+          }
+        />
+      ) : (
+        <>
+          {showRecents && (
+            <List.Section
+              title={STRINGS.sections.recent}
+              subtitle={`${recentProjects.length}`}
+            >
+              {recentProjects.map(renderProjectItem)}
+            </List.Section>
+          )}
+          <List.Section
+            title={STRINGS.sections.projects}
+            subtitle={STRINGS.sections.projectsSubtitle(filteredProjects.length)}
+          >
+            {filteredProjects.map(renderProjectItem)}
+          </List.Section>
+        </>
       )}
-      <List.Section
-        title={STRINGS.sections.projects}
-        subtitle={STRINGS.sections.projectsSubtitle(filteredProjects.length)}
-      >
-        {filteredProjects.map(renderProjectItem)}
-      </List.Section>
     </List>
   );
 }

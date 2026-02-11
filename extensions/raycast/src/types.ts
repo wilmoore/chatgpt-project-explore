@@ -55,3 +55,11 @@ export interface APIMetaResponse {
   name?: string;
   project_count?: number;
 }
+
+/**
+ * Schema for ~/.chatgpt-indexer/api-url.json
+ * Written by chatgpt-project-indexer on startup
+ */
+export interface ApiUrlConfig {
+  url: string;
+}

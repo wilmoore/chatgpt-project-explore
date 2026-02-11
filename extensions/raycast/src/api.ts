@@ -1,10 +1,32 @@
 import { getPreferenceValues } from "@raycast/api";
+import { readFileSync } from "fs";
+import { homedir } from "os";
+import { join } from "path";
 import type {
   Project,
   CustomAPIProjectsResponse,
   CustomAPIProject,
   SupabaseProject,
+  ApiUrlConfig,
 } from "./types";
+
+/** Well-known location for API URL config written by chatgpt-project-indexer */
+const API_URL_CONFIG_PATH = join(homedir(), ".chatgpt-indexer", "api-url.json");
+
+/**
+ * Reads the API URL from the well-known config file.
+ * Returns undefined if file doesn't exist or is invalid.
+ */
+function readApiUrlFromConfig(): string | undefined {
+  try {
+    const content = readFileSync(API_URL_CONFIG_PATH, "utf-8");
+    const config = JSON.parse(content) as ApiUrlConfig;
+    return config.url;
+  } catch {
+    // File doesn't exist or is invalid - fall back to preferences
+    return undefined;
+  }
+}
 
 /**
  * Detects if the URL points to a Supabase REST API.
@@ -148,25 +170,59 @@ async function fetchEdgeFunctionProjects(baseUrl: string): Promise<Project[]> {
   return data.map(fromCustomAPI);
 }
 
+/** Result of URL resolution with source info */
+export interface ResolvedUrl {
+  url: string;
+  source: "auto" | "preference";
+}
+
+/**
+ * Resolves the API URL from auto-discovery or preferences.
+ * Priority: 1) ~/.chatgpt-indexer/api-url.json  2) Extension preferences
+ * Returns both the URL and its source.
+ */
+export function resolveApiUrl(): ResolvedUrl {
+  // Try auto-discovery from well-known config file first
+  const autoDiscoveredUrl = readApiUrlFromConfig();
+  if (autoDiscoveredUrl) {
+    return { url: autoDiscoveredUrl, source: "auto" };
+  }
+
+  // Fall back to manual preference
+  const preferences = getPreferenceValues<Preferences>();
+  if (preferences.apiUrl) {
+    return { url: preferences.apiUrl, source: "preference" };
+  }
+
+  throw new Error(
+    "API URL not configured. Run chatgpt-indexer or set URL in extension preferences.",
+  );
+}
+
+/**
+ * Gets the current API URL or undefined if not configured.
+ * Does not throw - for display purposes only.
+ */
+export function getCurrentApiUrl(): ResolvedUrl | undefined {
+  try {
+    return resolveApiUrl();
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * Fetches projects from the configured API.
  * Auto-detects API type: Edge Function > Supabase REST > Custom API.
  */
 export async function fetchProjects(): Promise<Project[]> {
-  const preferences = getPreferenceValues<Preferences>();
-  const apiUrl = preferences.apiUrl;
+  const { url } = resolveApiUrl();
 
-  if (!apiUrl) {
-    throw new Error(
-      "API URL not configured. Please set your API URL in extension preferences.",
-    );
-  }
-
-  if (isEdgeFunctionAPI(apiUrl)) {
-    return await fetchEdgeFunctionProjects(apiUrl);
-  } else if (isSupabaseAPI(apiUrl)) {
-    return await fetchSupabaseProjects(apiUrl);
+  if (isEdgeFunctionAPI(url)) {
+    return await fetchEdgeFunctionProjects(url);
+  } else if (isSupabaseAPI(url)) {
+    return await fetchSupabaseProjects(url);
   } else {
-    return await fetchCustomAPIProjects(apiUrl);
+    return await fetchCustomAPIProjects(url);
   }
 }
