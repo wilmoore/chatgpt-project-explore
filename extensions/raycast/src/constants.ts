@@ -15,6 +15,10 @@ export const STRINGS = {
     retry: "Retry",
     openPreferences: "Open Preferences",
   },
+  noResults: {
+    title: "No Results",
+    description: (url: string) => `Connected to: ${url}`,
+  },
   search: {
     placeholder: "Search projects...",
   },
@@ -28,6 +32,7 @@ export const STRINGS = {
     openInChatGPTApp: "Open in ChatGPT App",
     copyUrl: "Copy URL",
     copyProjectTitle: "Copy Project Title",
+    copyApiUrl: "Copy API URL",
     refresh: "Refresh",
   },
   tooltips: {

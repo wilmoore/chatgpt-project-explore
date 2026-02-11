@@ -1,0 +1,18 @@
+{
+  "attempts": [
+    {
+      "timestamp": "2026-02-11T01:14:13Z",
+      "tool": "Bash",
+      "error": "cd /Users/wilmooreiii/Documents/src/chatgpt-project-indexer && npm run lint 2>&1",
+      "status": "unresolved"
+    },
+    {
+      "timestamp": "2026-02-11T01:14:25Z",
+      "tool": "Bash",
+      "error": "cd /Users/wilmooreiii/Documents/src/chatgpt-project-indexer && npm run test 2>&1",
+      "status": "unresolved"
+    }
+  ],
+  "strikeCount": 1,
+  "lastErrorHash": "0ecdd749"
+}

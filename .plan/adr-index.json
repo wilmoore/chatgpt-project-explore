@@ -1,5 +1,5 @@
 {
-  "lastSequence": 8,
+  "lastSequence": 9,
   "entries": [
     {
       "branch": "mvp/chatgpt-project-explore",
@@ -37,6 +37,12 @@
       "branch": "fix/remove-technical-edge-function-label-add-i18n",
       "adrs": [
         "008-i18n-constants-for-user-facing-strings.md"
+      ]
+    },
+    {
+      "branch": "refactor/dynamic-supabase-port",
+      "adrs": [
+        "009-dynamic-api-url-discovery.md"
       ]
     }
   ]
