@@ -1,6 +1,32 @@
 {
-  "lastSequence": 22,
+  "lastSequence": 24,
   "items": [
+    {
+      "id": 24,
+      "title": "Add JSON file fallback for project data",
+      "description": "When the Supabase edge function is unavailable, fall back to reading from the local projects.json file at ~/Documents/src/chatgpt-project-indexer/projects.json. Promoted from spike/explore-json-file-fallback-source.",
+      "category": "feature",
+      "severity": "medium",
+      "fingerprint": "feature|24|json-file-fallback-source",
+      "source": "/pro:feature",
+      "sourceBranch": "feat/json-file-fallback-source",
+      "createdAt": "2026-02-25T19:30:00.000Z",
+      "status": "in-progress"
+    },
+    {
+      "id": 23,
+      "title": "Explore JSON file as fallback data source",
+      "description": "Spike: Investigate using projects.json (written by chatgpt-project-indexer) as a fallback data source when the Supabase edge function is unavailable. This would eliminate the need to manually start the edge function after reboots.",
+      "category": "spike",
+      "severity": "medium",
+      "fingerprint": "spike|23|explore-json-file-fallback-source",
+      "source": "/pro:spike",
+      "sourceBranch": "spike/explore-json-file-fallback-source",
+      "createdAt": "2026-02-25T19:00:00.000Z",
+      "status": "resolved",
+      "resolvedAt": "2026-02-25T19:30:00.000Z",
+      "promotedTo": "feat/json-file-fallback-source"
+    },
     {
       "id": 22,
       "title": "Search fails to match projects with punctuation separators",

@@ -1,10 +1,14 @@
 import { getPreferenceValues } from "@raycast/api";
+import { readFileSync } from "fs";
 import type {
   Project,
   CustomAPIProjectsResponse,
   CustomAPIProject,
   SupabaseProject,
+  JsonStorageFile,
+  JsonStorageProject,
 } from "./types";
+import { JSON_STORAGE_PATH, STRINGS } from "./constants";
 
 /**
  * Detects if the URL points to a Supabase REST API.
@@ -58,6 +62,48 @@ function fromSupabase(project: SupabaseProject): Project {
     createdAt: project.created_at,
     updatedAt: project.last_confirmed_at,
   };
+}
+
+/**
+ * Converts a JSON storage project to unified Project format.
+ */
+function fromJsonStorage(project: JsonStorageProject): Project {
+  return {
+    id: project.id,
+    name: project.title,
+    openUrl: `${CHATGPT_PROJECT_URL_BASE}${project.id}`,
+    createdAt: project.firstSeenAt,
+    updatedAt: project.lastConfirmedAt,
+  };
+}
+
+/**
+ * Reads projects from local JSON storage file.
+ * @throws Error if file doesn't exist or is invalid
+ */
+function fetchFromJsonFile(): Project[] {
+  try {
+    const content = readFileSync(JSON_STORAGE_PATH, "utf-8");
+    const data = JSON.parse(content) as JsonStorageFile;
+
+    if (data.version !== 1 || !Array.isArray(data.projects)) {
+      throw new Error(STRINGS.error.jsonFileInvalid);
+    }
+
+    return data.projects.map(fromJsonStorage);
+  } catch (err) {
+    if (err instanceof Error) {
+      if (
+        err.message.includes("ENOENT") ||
+        err.message.includes("no such file") ||
+        err.code === "ENOENT"
+      ) {
+        throw new Error(STRINGS.error.jsonFileNotFound);
+      }
+      throw new Error(STRINGS.error.jsonFileInvalid);
+    }
+    throw new Error(STRINGS.error.jsonFileInvalid);
+  }
 }
 
 /**
@@ -149,24 +195,25 @@ async function fetchEdgeFunctionProjects(baseUrl: string): Promise<Project[]> {
 }
 
 /**
- * Fetches projects from the configured API.
- * Auto-detects API type: Edge Function > Supabase REST > Custom API.
+ * Fetches projects from the configured API or JSON file.
+ * If apiUrl is configured, uses API (no fallback).
+ * If apiUrl is not configured, reads from JSON file.
  */
 export async function fetchProjects(): Promise<Project[]> {
   const preferences = getPreferenceValues<Preferences>();
   const apiUrl = preferences.apiUrl;
 
-  if (!apiUrl) {
-    throw new Error(
-      "API URL not configured. Please set your API URL in extension preferences.",
-    );
+  // If API URL is configured, use API only (no fallback)
+  if (apiUrl) {
+    if (isEdgeFunctionAPI(apiUrl)) {
+      return await fetchEdgeFunctionProjects(apiUrl);
+    } else if (isSupabaseAPI(apiUrl)) {
+      return await fetchSupabaseProjects(apiUrl);
+    } else {
+      return await fetchCustomAPIProjects(apiUrl);
+    }
   }
 
-  if (isEdgeFunctionAPI(apiUrl)) {
-    return await fetchEdgeFunctionProjects(apiUrl);
-  } else if (isSupabaseAPI(apiUrl)) {
-    return await fetchSupabaseProjects(apiUrl);
-  } else {
-    return await fetchCustomAPIProjects(apiUrl);
-  }
+  // No API configured - use JSON file
+  return fetchFromJsonFile();
 }

@@ -1,3 +1,14 @@
+import { homedir } from "os";
+import { join } from "path";
+
+export const JSON_STORAGE_PATH = join(
+  homedir(),
+  "Documents",
+  "src",
+  "chatgpt-project-indexer",
+  "projects.json",
+);
+
 /**
  * User-facing strings for i18n support.
  * All UI text should be referenced from this constant to avoid magic strings.
@@ -14,6 +25,8 @@ export const STRINGS = {
     fallbackDescription: "Please check your API URL and try again.",
     retry: "Retry",
     openPreferences: "Open Preferences",
+    jsonFileNotFound: `JSON file not found at ${JSON_STORAGE_PATH}. Run the indexer to generate it.`,
+    jsonFileInvalid: `JSON file is corrupted at ${JSON_STORAGE_PATH}.`,
   },
   search: {
     placeholder: "Search projects...",

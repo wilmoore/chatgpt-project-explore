@@ -55,3 +55,23 @@ export interface APIMetaResponse {
   name?: string;
   project_count?: number;
 }
+
+/**
+ * Project record from local JSON storage file.
+ * Written by chatgpt-project-indexer.
+ */
+export interface JsonStorageProject {
+  id: string;
+  title: string;
+  firstSeenAt: string;
+  lastConfirmedAt: string;
+}
+
+/**
+ * Schema for projects.json file written by chatgpt-project-indexer.
+ */
+export interface JsonStorageFile {
+  version: number;
+  lastUpdatedAt: string;
+  projects: JsonStorageProject[];
+}
