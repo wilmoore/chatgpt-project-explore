@@ -8,8 +8,8 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 type ExtensionPreferences = {
-  /** API URL - Base URL of your Project Index API (e.g., https://your-api.com or https://xyz.supabase.co/rest/v1) */
-  "apiUrl": string,
+  /** API URL - Optional: Base URL of your Project Index API. Leave empty to use local JSON file at ~/Documents/src/chatgpt-project-indexer/projects.json */
+  "apiUrl"?: string,
   /** Recent Projects Count - Number of recently opened projects to show at the top (0 to disable) */
   "recentCount": string
 }

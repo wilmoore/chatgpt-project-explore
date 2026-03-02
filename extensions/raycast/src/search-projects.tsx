@@ -36,32 +36,9 @@ function openInChrome(url: string): void {
 
 export default function SearchProjects() {
   const preferences = getPreferenceValues<Preferences>();
-  const apiUrl = preferences.apiUrl;
   const recentCount = parseInt(preferences.recentCount || "3", 10);
 
   const [searchText, setSearchText] = useState("");
-
-  // Show setup screen if API URL is not configured
-  if (!apiUrl) {
-    return (
-      <List>
-        <List.EmptyView
-          icon={Icon.Gear}
-          title={STRINGS.setup.title}
-          description={STRINGS.setup.description}
-          actions={
-            <ActionPanel>
-              <Action
-                title={STRINGS.setup.openPreferences}
-                icon={Icon.Gear}
-                onAction={openExtensionPreferences}
-              />
-            </ActionPanel>
-          }
-        />
-      </List>
-    );
-  }
 
   const {
     data: projects,

@@ -21,9 +21,9 @@
     {
       "name": "apiUrl",
       "type": "textfield",
-      "required": true,
+      "required": false,
       "title": "API URL",
-      "description": "Base URL of your Project Index API (e.g., https://your-api.com or https://xyz.supabase.co/rest/v1)",
+      "description": "Optional: Base URL of your Project Index API. Leave empty to use local JSON file at ~/Documents/src/chatgpt-project-indexer/projects.json",
       "placeholder": "https://your-project-index-api.com"
     },
     {
